@@ -2028,7 +2028,7 @@
             "groups": [
               {
                 "group": "概要",
-                "pages": ["ja-JP/index", "ja-JP/AGENTS"]
+                "pages": ["ja-JP/index"]
               },
               {
                 "group": "初回セットアップ",
