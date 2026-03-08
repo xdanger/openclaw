@@ -471,6 +471,11 @@ function isAnthropic1MModel(modelId: string): boolean {
   return ANTHROPIC_1M_MODEL_PREFIXES.some((prefix) => normalized.startsWith(prefix));
 }
 
+function supportsAnthropicBetaHeaders(provider: string): boolean {
+  const normalized = provider.trim().toLowerCase();
+  return normalized.split(/[^a-z0-9]+/).includes("anthropic");
+}
+
 function parseHeaderList(value: unknown): string[] {
   if (typeof value !== "string") {
     return [];
@@ -486,7 +491,7 @@ function resolveAnthropicBetas(
   provider: string,
   modelId: string,
 ): string[] | undefined {
-  if (provider !== "anthropic") {
+  if (!supportsAnthropicBetaHeaders(provider)) {
     return undefined;
   }
 

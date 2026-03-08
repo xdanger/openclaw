@@ -237,7 +237,9 @@ function resolveProviderModelRef(params: {
 }
 
 function isAnthropic1MModel(provider: string, model: string): boolean {
-  if (provider !== "anthropic") {
+  const normalizedProvider = provider.trim().toLowerCase();
+  const providerTokens = normalizedProvider.split(/[^a-z0-9]+/).filter(Boolean);
+  if (!providerTokens.includes("anthropic")) {
     return false;
   }
   const normalized = model.trim().toLowerCase();

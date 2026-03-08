@@ -1319,6 +1319,42 @@ describe("applyExtraParamsToAgent", () => {
     });
   });
 
+  it("adds Anthropic 1M beta header for anthropic-vtx when context1m is enabled", () => {
+    const { calls, agent } = createOptionsCaptureAgent();
+    const cfg = {
+      agents: {
+        defaults: {
+          models: {
+            "anthropic-vtx/claude-opus-4-6": {
+              params: { context1m: true },
+            },
+          },
+        },
+      },
+    };
+
+    applyExtraParamsToAgent(agent, cfg, "anthropic-vtx", "claude-opus-4-6");
+
+    const model = {
+      api: "anthropic-messages",
+      provider: "anthropic-vtx",
+      id: "claude-opus-4-6",
+    } as Model<"anthropic-messages">;
+    const context: Context = { messages: [] };
+
+    void agent.streamFn?.(model, context, {
+      apiKey: "sk-ant-api03-test",
+      headers: { "X-Custom": "1" },
+    });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.headers).toEqual({
+      "X-Custom": "1",
+      "anthropic-beta":
+        "fine-grained-tool-streaming-2025-05-14,interleaved-thinking-2025-05-14,context-1m-2025-08-07",
+    });
+  });
+
   it("does not add Anthropic 1M beta header when context1m is not enabled", () => {
     const cfg = buildAnthropicModelConfig("anthropic/claude-opus-4-6", {
       temperature: 0.2,
