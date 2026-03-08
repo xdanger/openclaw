@@ -144,4 +144,35 @@ describe("resolveContextTokensForModel", () => {
 
     expect(result).toBe(200_000);
   });
+
+  it("caps override by known model context window", () => {
+    const result = resolveContextTokensForModel({
+      cfg: {
+        models: {
+          providers: {
+            "openai-codex": {
+              models: [{ id: "gpt-5.4", contextWindow: 900_000 }],
+            },
+          },
+        },
+      },
+      contextTokensOverride: 1_048_000,
+      provider: "openai-codex",
+      model: "gpt-5.4",
+      fallbackContextTokens: 200_000,
+    });
+
+    expect(result).toBe(900_000);
+  });
+
+  it("prefers lower override when it is already below the model context window", () => {
+    const result = resolveContextTokensForModel({
+      contextTokensOverride: 128_000,
+      provider: "openai-codex",
+      model: "gpt-5.4",
+      fallbackContextTokens: 200_000,
+    });
+
+    expect(result).toBe(128_000);
+  });
 });
