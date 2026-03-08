@@ -181,6 +181,16 @@ describe("resolveContextTokensForModel", () => {
 
   it("prefers lower override when it is already below the model context window", () => {
     const result = resolveContextTokensForModel({
+      cfg: {
+        models: {
+          providers: {
+            "openai-codex": {
+              baseUrl: "https://example.com/v1",
+              models: [makeModel("gpt-5.4", 900_000)],
+            },
+          },
+        },
+      },
       contextTokensOverride: 128_000,
       provider: "openai-codex",
       model: "gpt-5.4",
@@ -188,5 +198,26 @@ describe("resolveContextTokensForModel", () => {
     });
 
     expect(result).toBe(128_000);
+  });
+
+  it("caps override when provider alias resolves to a configured provider entry", () => {
+    const result = resolveContextTokensForModel({
+      cfg: {
+        models: {
+          providers: {
+            "amazon-bedrock": {
+              baseUrl: "https://bedrock.example.com",
+              models: [makeModel("us.anthropic.claude-opus-4-6-v1", 200_000)],
+            },
+          },
+        },
+      },
+      contextTokensOverride: 1_048_000,
+      provider: "bedrock",
+      model: "us.anthropic.claude-opus-4-6-v1",
+      fallbackContextTokens: 100_000,
+    });
+
+    expect(result).toBe(200_000);
   });
 });

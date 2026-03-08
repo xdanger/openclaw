@@ -6,6 +6,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import { computeBackoff, type BackoffPolicy } from "../infra/backoff.js";
 import { consumeRootOptionToken, FLAG_TERMINATOR } from "../infra/cli-root-options.js";
 import { resolveOpenClawAgentDir } from "./agent-paths.js";
+import { findNormalizedProviderValue } from "./model-selection.js";
 import { ensureOpenClawModelsJson } from "./models-config.js";
 
 type ModelEntry = { id: string; contextWindow?: number };
@@ -270,7 +271,7 @@ export function resolveContextTokensForModel(params: {
     } else {
       const configuredWindow = (() => {
         const providers = params.cfg?.models?.providers;
-        const providerEntry = providers?.[ref.provider];
+        const providerEntry = findNormalizedProviderValue(providers, ref.provider);
         const models = Array.isArray(providerEntry?.models) ? providerEntry.models : [];
         const match = models.find((m) => m?.id === ref.model);
         return typeof match?.contextWindow === "number" && match.contextWindow > 0
