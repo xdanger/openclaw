@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ModelDefinitionConfig } from "../config/types.models.js";
 import {
   ANTHROPIC_CONTEXT_1M_TOKENS,
   applyConfiguredContextWindows,
@@ -6,6 +7,18 @@ import {
   resolveContextTokensForModel,
 } from "./context.js";
 import { createSessionManagerRuntimeRegistry } from "./pi-extensions/session-manager-runtime-registry.js";
+
+function makeModel(id: string, contextWindow: number): ModelDefinitionConfig {
+  return {
+    id,
+    name: id,
+    contextWindow,
+    maxTokens: Math.min(contextWindow, 128_000),
+    input: ["text"],
+    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    reasoning: false,
+  };
+}
 
 describe("applyDiscoveredContextWindows", () => {
   it("keeps the smallest context window when duplicate model ids are discovered", () => {
@@ -151,7 +164,8 @@ describe("resolveContextTokensForModel", () => {
         models: {
           providers: {
             "openai-codex": {
-              models: [{ id: "gpt-5.4", contextWindow: 900_000 }],
+              baseUrl: "https://example.com/v1",
+              models: [makeModel("gpt-5.4", 900_000)],
             },
           },
         },
