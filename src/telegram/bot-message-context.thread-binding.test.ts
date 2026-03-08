@@ -113,4 +113,32 @@ describe("buildTelegramMessageContext bound conversation override", () => {
     expect(ctx?.ctxPayload?.SessionKey).toBe("agent:codex-acp:session-dm");
     expect(hoisted.touchMock).toHaveBeenCalledWith("default:1234", undefined);
   });
+
+  it("keeps dm topic bindings on the bound session key without appending a thread suffix", async () => {
+    hoisted.resolveByConversationMock.mockReturnValue({
+      bindingId: "default:1234:topic:42",
+      targetSessionKey: "agent:codex-acp:session-dm-topic",
+    });
+
+    const ctx = await buildTelegramMessageContextForTest({
+      message: {
+        message_id: 1,
+        chat: { id: 1234, type: "private" },
+        message_thread_id: 42,
+        date: 1_700_000_000,
+        text: "hello",
+        from: { id: 1234, first_name: "Alice" },
+      },
+    });
+
+    expect(hoisted.resolveByConversationMock).toHaveBeenCalledWith({
+      channel: "telegram",
+      accountId: "default",
+      conversationId: "1234:topic:42",
+    });
+    expect(ctx?.route.matchedBy).toBe("binding.channel");
+    expect(ctx?.ctxPayload?.SessionKey).toBe("agent:codex-acp:session-dm-topic");
+    expect(ctx?.ctxPayload?.SessionKey).not.toContain(":thread:");
+    expect(hoisted.touchMock).toHaveBeenCalledWith("default:1234:topic:42", undefined);
+  });
 });

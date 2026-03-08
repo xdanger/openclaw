@@ -314,7 +314,7 @@ export const registerTelegramHandlers = ({
     });
     const baseSessionKey = route.sessionKey;
     const threadKeys =
-      dmThreadId != null
+      dmThreadId != null && route.matchedBy !== "binding.channel"
         ? resolveThreadSessionKeys({ baseSessionKey, threadId: `${params.chatId}:${dmThreadId}` })
         : null;
     const sessionKey = threadKeys?.sessionKey ?? baseSessionKey;

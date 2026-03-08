@@ -240,9 +240,12 @@ export const buildTelegramMessageContext = async ({
         identityLinks: freshCfg.session?.identityLinks,
       }).toLowerCase()
     : route.sessionKey;
-  // DMs: use thread suffix for session isolation (works regardless of dmScope)
+  // DMs normally isolate per-topic sessions with a thread suffix, but once a
+  // conversation is explicitly bound to a session (for example an ACP session
+  // spawned into a Telegram DM topic) the bound session key is already the
+  // canonical target and must not be rewritten again.
   const threadKeys =
-    dmThreadId != null
+    dmThreadId != null && route.matchedBy !== "binding.channel"
       ? resolveThreadSessionKeys({ baseSessionKey, threadId: `${chatId}:${dmThreadId}` })
       : null;
   const sessionKey = threadKeys?.sessionKey ?? baseSessionKey;
